@@ -40,31 +40,7 @@ A full-stack MERN application for connecting service providers and users in a lo
 ## Project Structure
 ```
 
-community-marketplace/
-├─ server/ # Node/Express backend
-│ ├─ models/ # Mongoose models
-│ ├─ routes/ # Express routes
-│ ├─ controllers/ # Route logic
-│ ├─ middleware/ # Auth, error handling, etc.
-│ ├─ utils/ # Helper functions
-│ ├─ config/ # DB & env configs
-│ ├─ server.js # Entry point
-├─ client/ # React frontend
-│ ├─ public/
-│ ├─ src/
-│ │ ├─ components/ # Reusable UI components
-│ │ ├─ pages/ # Route pages
-│ │ ├─ context/ # Global state (auth, bookings, etc.)
-│ │ ├─ hooks/ # Custom hooks
-│ │ ├─ utils/ # Helpers, API functions
-│ │ ├─ App.jsx
-│ │ ├─ index.jsx
-│ ├─ tailwind.config.js
-│ ├─ postcss.config.js
-│ └─ package.json
-├─ .env # API keys, DB URI, secrets
-├─ package.json # Root scripts if needed
-└─ README.md
+Soon to be explained!
 
 ````
 
