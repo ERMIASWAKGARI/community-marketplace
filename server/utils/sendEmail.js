@@ -37,7 +37,7 @@ export const sendEmailVerification = async (email, token) => {
       Thanks for signing up. Please verify your email by clicking the button below:
     </p>
     <div style="text-align: center; margin: 30px 0;">
-      <a href="${process.env.FRONTEND_URL}/verify-email?token=${token}"
+      <a href="http://localhost:8000/api/v1/auth/verify-email?token=${token}"
          style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
         Verify Email
       </a>

@@ -1,3 +1,4 @@
+import jwt from "jsonwebtoken";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import User from "../models/userModel.js";
 import { successResponse } from "../utils/response.js";
@@ -17,7 +18,7 @@ export const resendVerificationEmail = asyncHandler(async (req, res) => {
     throw new AppError("User with this email is already verified!", 400);
   }
 
-  const token = generateToken(user._id);
+  const token = generateToken(user._id, process.env.JWT_EMAIL_SECRET);
   await sendEmailVerification(user.email, token);
 
   return successResponse(res, 200, null, "Email verification link sent");
@@ -48,7 +49,7 @@ export const loginUser = asyncHandler(async (req, res, next) => {
   }
 
   // Generate token
-  const token = generateToken(user._id);
+  const token = generateToken(user._id, process.env.JWT_SECRET, "7d");
 
   // Return user data without password
   const userToReturn = user.toObject();
@@ -60,4 +61,31 @@ export const loginUser = asyncHandler(async (req, res, next) => {
     { user: userToReturn, token },
     "Login successful"
   );
+});
+
+export const verifyEmail = asyncHandler(async (req, res) => {
+  const { token } = req.query;
+  console.log(process.env.JWT_EMAIL_SECRET);
+  console.log(token);
+
+  if (!token) throw new AppError("Verification token missing", 400);
+
+  let decoded;
+  try {
+    decoded = jwt.verify(token, process.env.JWT_EMAIL_SECRET);
+  } catch (error) {
+    throw new AppError("Invalid or expired token", 400);
+  }
+
+  const user = await User.findById(decoded.id);
+  if (!user) throw new AppError("User not found", 404);
+
+  if (user.isEmailVerified)
+    return successResponse(res, 200, {}, "Email already verified");
+
+  user.isEmailVerified = true;
+  user.emailVerifiedAt = new Date();
+  await user.save();
+
+  return successResponse(res, 200, {}, "Email verified successfully");
 });
