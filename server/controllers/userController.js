@@ -32,3 +32,15 @@ export const createUser = asyncHandler(async (req, res) => {
     "User created. Check your email to verify your account."
   );
 });
+
+export const getUserById = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+
+  const user = await User.findById(id).select("-password");
+
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+
+  return successResponse(res, 200, { user }, "User retrieved successfully");
+});
