@@ -5,14 +5,3 @@ export const successResponse = (res, statusCode, data, message = "Success") => {
     data,
   });
 };
-
-export const errorResponse = (
-  res,
-  statusCode,
-  message = "Something went wrong"
-) => {
-  return res.status(statusCode).json({
-    status: "fail",
-    message,
-  });
-};
