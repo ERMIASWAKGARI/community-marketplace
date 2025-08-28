@@ -44,3 +44,15 @@ export const getUserById = asyncHandler(async (req, res, next) => {
 
   return successResponse(res, 200, { user }, "User retrieved successfully");
 });
+
+export const deleteUserById = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+
+  const user = await User.findByIdAndDelete(id);
+
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+
+  return successResponse(res, 200, null, "User deleted successfully");
+});
