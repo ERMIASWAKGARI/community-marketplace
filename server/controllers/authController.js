@@ -65,8 +65,6 @@ export const loginUser = asyncHandler(async (req, res, next) => {
 
 export const verifyEmail = asyncHandler(async (req, res) => {
   const { token } = req.query;
-  console.log(process.env.JWT_EMAIL_SECRET);
-  console.log(token);
 
   if (!token) throw new AppError("Verification token missing", 400);
 
