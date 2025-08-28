@@ -6,9 +6,9 @@ import { successResponse } from "../utils/response.js";
 import { sendEmailVerification } from "../utils/sendEmail.js";
 import { AppError } from "../utils/appError.js";
 
-export const generateEmailToken = (userId) => {
+export const generateToken = (userId, expiresIn = "1d") => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
-    expiresIn: "1d",
+    expiresIn,
   });
 };
 
@@ -21,7 +21,7 @@ export const createUser = asyncHandler(async (req, res) => {
   delete userToReturn.password;
 
   // Generate email verification token (expires in 24h)
-  const token = generateEmailToken(newUser._id);
+  const token = generateToken(newUser._id);
 
   await sendEmailVerification(newUser.email, token);
 
