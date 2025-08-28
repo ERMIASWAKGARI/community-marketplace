@@ -1,28 +1,31 @@
-export const getUser = (req, res) => {
-  // Logic to get a user by ID
-};
+import { AppError } from "../utils/appError.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import User from "../models/userModel.js";
+import { successResponse } from "../utils/response.js";
 
-export const createUser = (req, res) => {
-  // Logic to create a new user
+export const createUser = asyncHandler(async (req, res, next) => {
+  const { name, email, password, role } = req.body;
 
-  const newUser = req.body;
-  // Save the new user to the database
-  res.status(201).json({
-    status: "success",
-    data: {
-      user: newUser,
-    },
-  });
-};
+  // Custom validation
+  if (!name || !email || !password) {
+    return next(new AppError("Name, email, and password are required", 400));
+  }
 
-export const updateUser = (req, res) => {
-  // Logic to update a user by ID
-};
+  // Optional: extra check before hitting DB
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return next(new AppError("Email is already registered", 400));
+  }
 
-export const deleteUser = (req, res) => {
-  // Logic to delete a user by ID
-};
+  const newUser = await User.create({ name, email, password, role });
 
-export const getAllUsers = (req, res) => {
-  // Logic to get all users
-};
+  const userToReturn = newUser.toObject();
+  delete userToReturn.password;
+
+  return successResponse(
+    res,
+    201,
+    { user: userToReturn },
+    "User created successfully"
+  );
+});
