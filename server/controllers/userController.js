@@ -60,7 +60,7 @@ export const deleteUserById = asyncHandler(async (req, res, next) => {
 
 // Update avatar
 export const updateAvatar = asyncHandler(async (req, res) => {
-  const userId = req.user.id; // comes from auth middleware
+  const userId = req.user.id;
 
   if (!req.file) throw new AppError("No image uploaded", 400);
 
@@ -73,7 +73,7 @@ export const updateAvatar = asyncHandler(async (req, res) => {
       crop: "fill",
     });
 
-    // Update user avatar url
+    // Find the user
     const user = await User.findById(userId);
 
     if (user.avatar?.public_id) {
@@ -81,6 +81,7 @@ export const updateAvatar = asyncHandler(async (req, res) => {
       await cloudinary.uploader.destroy(user.avatar.public_id);
     }
 
+    // Update user avatar
     user.avatar = {
       url: result.secure_url,
       public_id: result.public_id,
@@ -88,11 +89,7 @@ export const updateAvatar = asyncHandler(async (req, res) => {
 
     await user.save();
 
-    return res.status(200).json({
-      status: "success",
-      message: "Avatar updated successfully",
-      data: { user },
-    });
+    return successResponse(res, 200, { user }, "Avatar updated successfully");
   } catch (error) {
     console.error("Cloudinary upload error:", error);
     throw new AppError("Image upload failed", 500);
