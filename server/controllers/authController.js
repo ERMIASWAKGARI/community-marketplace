@@ -2,9 +2,12 @@ import jwt from "jsonwebtoken";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import User from "../models/userModel.js";
 import { successResponse } from "../utils/response.js";
-import { sendEmailVerification } from "../utils/sendEmail.js";
+import {
+  sendEmailVerification,
+  sendPasswordResetEmail,
+} from "../utils/sendEmail.js";
 import { AppError } from "../utils/appError.js";
-import { generateToken } from "./userController.js";
+import { generateToken, generateResetToken } from "../utils/token.js";
 
 export const resendVerificationEmail = asyncHandler(async (req, res) => {
   const { email } = req.body;
@@ -86,4 +89,24 @@ export const verifyEmail = asyncHandler(async (req, res) => {
   await user.save();
 
   return successResponse(res, 200, {}, "Email verified successfully");
+});
+
+export const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user) throw new AppError("User not found with this email", 404);
+
+  // Generate reset token
+  const { resetToken, hashedToken } = generateResetToken();
+
+  // Save token in DB (expires in 1 hour)
+  user.resetPasswordToken = hashedToken;
+  user.resetPasswordExpire = Date.now() + 60 * 60 * 1000;
+  await user.save({ validateBeforeSave: false });
+
+  // Send password reset email
+  await sendPasswordResetEmail(user.email, resetToken);
+
+  return successResponse(res, 200, {}, "Password reset email sent!");
 });

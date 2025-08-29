@@ -1,17 +1,10 @@
-import jwt from "jsonwebtoken";
-
 import { asyncHandler } from "../utils/asyncHandler.js";
 import User from "../models/userModel.js";
 import { successResponse } from "../utils/response.js";
 import { sendEmailVerification } from "../utils/sendEmail.js";
 import { AppError } from "../utils/appError.js";
 import cloudinary from "../config/cloudinary.js";
-
-export const generateToken = (userId, secret, expiresIn = "1d") => {
-  return jwt.sign({ id: userId }, secret, {
-    expiresIn,
-  });
-};
+import { generateToken } from "../utils/token.js";
 
 export const createUser = asyncHandler(async (req, res) => {
   const { name, email, password, role } = req.body;
