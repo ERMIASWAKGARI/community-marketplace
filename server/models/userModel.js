@@ -29,8 +29,8 @@ const userSchema = new mongoose.Schema(
       default: "user",
     },
     avatar: {
-      type: String, // store URL (cloudinary, s3, etc.)
-      default: "",
+      url: { type: String, default: "" },
+      public_id: { type: String, default: "" },
     },
     phone: {
       type: String,

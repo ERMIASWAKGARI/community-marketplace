@@ -5,6 +5,7 @@ import User from "../models/userModel.js";
 import { successResponse } from "../utils/response.js";
 import { sendEmailVerification } from "../utils/sendEmail.js";
 import { AppError } from "../utils/appError.js";
+import cloudinary from "../config/cloudinary.js";
 
 export const generateToken = (userId, secret, expiresIn = "1d") => {
   return jwt.sign({ id: userId }, secret, {
@@ -55,4 +56,45 @@ export const deleteUserById = asyncHandler(async (req, res, next) => {
   }
 
   return successResponse(res, 200, null, "User deleted successfully");
+});
+
+// Update avatar
+export const updateAvatar = asyncHandler(async (req, res) => {
+  const userId = req.user.id; // comes from auth middleware
+
+  if (!req.file) throw new AppError("No image uploaded", 400);
+
+  try {
+    // Upload to cloudinary
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: "avatars",
+      width: 300,
+      height: 300,
+      crop: "fill",
+    });
+
+    // Update user avatar url
+    const user = await User.findById(userId);
+
+    if (user.avatar?.public_id) {
+      // Delete previous image
+      await cloudinary.uploader.destroy(user.avatar.public_id);
+    }
+
+    user.avatar = {
+      url: result.secure_url,
+      public_id: result.public_id,
+    };
+
+    await user.save();
+
+    return res.status(200).json({
+      status: "success",
+      message: "Avatar updated successfully",
+      data: { user },
+    });
+  } catch (error) {
+    console.error("Cloudinary upload error:", error);
+    throw new AppError("Image upload failed", 500);
+  }
 });
