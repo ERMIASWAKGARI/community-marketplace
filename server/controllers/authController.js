@@ -138,3 +138,25 @@ export const resetPassword = asyncHandler(async (req, res) => {
 
   return successResponse(res, 200, {}, "Password reset successful!");
 });
+
+export const changePassword = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    throw new AppError("Both current and new passwords are required", 400);
+  }
+
+  const user = await User.findById(userId).select("+password");
+  if (!user) throw new AppError("User not found", 404);
+
+  // Check current password
+  const isMatch = await user.matchPassword(currentPassword);
+  if (!isMatch) throw new AppError("Current password is incorrect", 401);
+
+  // Update password
+  user.password = newPassword;
+  await user.save(); // pre-save middleware will hash it
+
+  return successResponse(res, 200, {}, "Password changed successfully");
+});
