@@ -28,6 +28,24 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "provider", "admin"],
       default: "user",
     },
+
+    providerVerification: {
+      status: {
+        type: String,
+        enum: ["not-verified", "pending", "verified", "rejected"],
+        default: "not-verified",
+      },
+      documents: [
+        {
+          url: String,
+          public_id: String,
+        },
+      ],
+      requestedAt: Date,
+      reviewedAt: Date,
+      reviewer: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // admin who verified/rejected
+      rejectionReason: String,
+    },
     avatar: {
       url: { type: String, default: "" },
       public_id: { type: String, default: "" },

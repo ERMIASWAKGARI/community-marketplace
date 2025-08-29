@@ -88,3 +88,60 @@ export const updateAvatar = asyncHandler(async (req, res) => {
     throw new AppError("Image upload failed", 500);
   }
 });
+
+export const requestProviderVerification = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+
+  // Check if user already requested verification
+  const user = await User.findById(userId);
+  if (!user) throw new AppError("User not found", 404);
+
+  if (user.role === "provider") {
+    throw new AppError("You are already a verified provider", 400);
+  }
+
+  if (!req.files || req.files.length === 0) {
+    throw new AppError("Please upload at least one document", 400);
+  }
+
+  // Upload documents to Cloudinary
+  const uploadedDocs = [];
+  for (const file of req.files) {
+    try {
+      const result = await cloudinary.uploader.upload(file.path, {
+        folder: `provider_docs/${userId}`,
+        resource_type: "auto", // allows PDFs & images
+      });
+
+      uploadedDocs.push({
+        url: result.secure_url,
+        public_id: result.public_id,
+      });
+    } catch (error) {
+      console.error("Cloudinary upload error:", error);
+      throw new AppError("Document upload failed", 500);
+    }
+  }
+
+  // Save documents and request status in user
+  user.verificationRequest = {
+    status: "pending", // admin will approve/reject
+    documents: uploadedDocs,
+    requestedAt: new Date(),
+  };
+
+  await user.save();
+
+  return res.status(200).json({
+    status: "success",
+    message: "Provider verification request submitted successfully",
+    data: {
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        verificationRequest: user.verificationRequest,
+      },
+    },
+  });
+});
