@@ -110,3 +110,31 @@ export const forgotPassword = asyncHandler(async (req, res) => {
 
   return successResponse(res, 200, {}, "Password reset email sent!");
 });
+
+import crypto from "crypto";
+
+export const resetPassword = asyncHandler(async (req, res) => {
+  const { token, newPassword } = req.body;
+
+  if (!token || !newPassword)
+    throw new AppError("Token and new password required", 400);
+
+  // Hash token to compare with DB
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  const user = await User.findOne({
+    resetPasswordToken: hashedToken,
+    resetPasswordExpire: { $gt: Date.now() },
+  });
+
+  if (!user) throw new AppError("Invalid or expired token", 400);
+
+  // Update password
+  user.password = newPassword;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+
+  await user.save();
+
+  return successResponse(res, 200, {}, "Password reset successful!");
+});
