@@ -34,3 +34,16 @@ export const protect = asyncHandler(async (req, res, next) => {
     throw new AppError("Not authorized, token invalid", 401);
   }
 });
+
+export const adminOnly = (req, res, next) => {
+  if (!req.user) {
+    // Shouldn't happen if protect is used first
+    throw new AppError("Not authorized", 401);
+  }
+
+  if (req.user.role !== "admin") {
+    throw new AppError("Admin access required", 403);
+  }
+
+  next();
+};

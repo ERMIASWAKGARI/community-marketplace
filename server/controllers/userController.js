@@ -125,16 +125,10 @@ export const requestProviderVerification = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  return res.status(200).json({
-    status: "success",
-    message: "Provider verification request submitted successfully",
-    data: {
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        verificationRequest: user.providerVerification,
-      },
-    },
-  });
+  return successResponse(
+    res,
+    200,
+    { user },
+    "Provider verification request submitted successfully"
+  );
 });

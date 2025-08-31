@@ -11,7 +11,7 @@ import { uploadAvatar, uploadDocs } from "../middlewares/uploadMiddleware.js";
 
 const router = express.Router();
 
-router.route("/").post(createUser);
+router.post("/register", createUser);
 router.route("/:id").get(protect, getUserById).delete(protect, deleteUserById);
 router.put("/avatar", protect, uploadAvatar.single("avatar"), updateAvatar);
 
