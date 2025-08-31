@@ -5,6 +5,7 @@ import { sendEmailVerification } from "../utils/sendEmail.js";
 import { AppError } from "../utils/appError.js";
 import cloudinary from "../config/cloudinary.js";
 import { generateToken } from "../utils/token.js";
+import { moderateImage } from "../utils/moderateImage.js";
 
 export const createUser = asyncHandler(async (req, res) => {
   const { name, email, password, role } = req.body;
@@ -51,42 +52,34 @@ export const deleteUserById = asyncHandler(async (req, res, next) => {
   return successResponse(res, 200, null, "User deleted successfully");
 });
 
-// Update avatar
 export const updateAvatar = asyncHandler(async (req, res) => {
   const userId = req.user.id;
-
   if (!req.file) throw new AppError("No image uploaded", 400);
 
-  try {
-    // Upload to cloudinary
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: "avatars",
-      width: 300,
-      height: 300,
-      crop: "fill",
-    });
+  // 1. Moderate before upload
+  await moderateImage(req.file.path);
 
-    // Find the user
-    const user = await User.findById(userId);
+  // 2. Upload to Cloudinary
+  const result = await cloudinary.uploader.upload(req.file.path, {
+    folder: "avatars",
+    width: 300,
+    height: 300,
+    crop: "fill",
+  });
 
-    if (user.avatar?.public_id) {
-      // Delete previous image
-      await cloudinary.uploader.destroy(user.avatar.public_id);
-    }
-
-    // Update user avatar
-    user.avatar = {
-      url: result.secure_url,
-      public_id: result.public_id,
-    };
-
-    await user.save();
-
-    return successResponse(res, 200, { user }, "Avatar updated successfully");
-  } catch (error) {
-    console.error("Cloudinary upload error:", error);
-    throw new AppError("Image upload failed", 500);
+  // 3. Update user avatar
+  const user = await User.findById(userId);
+  if (user.avatar?.public_id) {
+    await cloudinary.uploader.destroy(user.avatar.public_id);
   }
+
+  user.avatar = {
+    url: result.secure_url,
+    public_id: result.public_id,
+  };
+  await user.save();
+
+  return successResponse(res, 200, { user }, "Avatar updated successfully");
 });
 
 export const requestProviderVerification = asyncHandler(async (req, res) => {
@@ -125,7 +118,7 @@ export const requestProviderVerification = asyncHandler(async (req, res) => {
 
   // Save documents and request status in user
   user.providerVerification = {
-    status: "pending", // admin will approve/reject
+    status: "pending",
     documents: uploadedDocs,
     requestedAt: new Date(),
   };
