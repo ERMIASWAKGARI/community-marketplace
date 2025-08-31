@@ -30,7 +30,7 @@ export const approveVerification = asyncHandler(async (req, res) => {
   user.providerVerification.status = "verified";
   user.providerVerification.reviewedAt = new Date();
   user.providerVerification.reviewer = req.user._id;
-  user.role = "provider"; // upgrade user role
+  user.role = "provider";
 
   await user.save();
 
