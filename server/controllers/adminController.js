@@ -14,7 +14,8 @@ export const getPendingVerifications = asyncHandler(async (req, res) => {
     res,
     200,
     { users },
-    "Pending verifications retrieved successfully"
+    "Pending verifications retrieved successfully",
+    users.length
   );
 });
 
