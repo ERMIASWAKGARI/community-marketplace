@@ -4,12 +4,14 @@ import { AppError } from "./appError.js";
 export const moderateImage = async (filePath) => {
   const moderationResult = await modClient
     .check([
-      "nudity",
-      "offensive",
+      "nudity-2.1",
       "weapon",
-      "gore",
+      "offensive-2.0",
+      "gore-2.0",
       "violence",
       "self-harm",
+      "alcohol",
+      "recreational_drug",
       "text-content",
     ])
     .set_file(filePath);
@@ -19,14 +21,21 @@ export const moderateImage = async (filePath) => {
     throw new AppError("Image moderation failed", 500);
   }
 
-  // 🔹 Define thresholds (tweak as needed)
+  // 🔹 Define thresholds (fine-tuned)
   const thresholds = {
-    nudity: 0.5, // block if > 50% nudity/sexual
-    offensive: 0.5, // block offensive gestures/symbols
-    weapon: 0.5, // block obvious weapon presence
-    gore: 0.5, // block bloody/gore content
-    violence: 0.5, // block violent scenes
-    selfHarm: 0.5, // block self-harm imagery
+    nudity: 0.5,
+    erotic: 0.8,
+    sexual_display: 0.85,
+    suggestive: 0.9,
+    violence: 0.5,
+    gore: 0.5,
+    selfHarm: 0.5,
+    firearm: 0.3,
+    knife: 0.5,
+    alcohol: 0.7,
+    drugs: 0.5,
+    offensive: 0.7,
+    hate_symbol: 0.6,
   };
 
   const {
@@ -35,48 +44,67 @@ export const moderateImage = async (filePath) => {
     offensive,
     gore,
     violence,
+    alcohol,
+    recreational_drug,
     ["self-harm"]: selfHarm,
   } = moderationResult;
 
-  // 🔹 Check nudity (multiple subcategories)
+  // 🔹 Nudity & Suggestive
   if (
     nudity?.sexual_activity > thresholds.nudity ||
-    nudity?.sexual_display > thresholds.nudity ||
-    nudity?.erotica > thresholds.nudity ||
-    nudity?.very_suggestive > thresholds.nudity ||
-    nudity?.suggestive > thresholds.nudity
+    nudity?.sexual_display > thresholds.sexual_display ||
+    nudity?.erotica > thresholds.erotic ||
+    nudity?.very_suggestive > thresholds.suggestive ||
+    nudity?.suggestive > thresholds.suggestive
   ) {
     throw new AppError("Image rejected: nudity/sexual content detected", 400);
   }
 
-  // 🔹 Check weapons
-  if (
-    (weapon?.classes?.firearm ?? 0) > thresholds.weapon ||
-    (weapon?.classes?.knife ?? 0) > thresholds.weapon
-  ) {
-    throw new AppError("Image rejected: weapons detected", 400);
-  }
-
-  // 🔹 Check offensive content
-  if (
-    Object.values(offensive ?? {}).some((val) => val > thresholds.offensive)
-  ) {
-    throw new AppError("Image rejected: offensive symbols detected", 400);
-  }
-
-  // 🔹 Check gore
-  if (gore?.prob > thresholds.gore) {
-    throw new AppError("Image rejected: gore/bloody content detected", 400);
-  }
-
-  // 🔹 Check violence
+  // 🔹 Violence
   if (violence?.prob > thresholds.violence) {
     throw new AppError("Image rejected: violence detected", 400);
   }
 
-  // 🔹 Check self-harm
+  // 🔹 Gore
+  if (gore?.prob > thresholds.gore) {
+    throw new AppError("Image rejected: gore/bloody content detected", 400);
+  }
+
+  // 🔹 Self-harm
   if (selfHarm?.prob > thresholds.selfHarm) {
     throw new AppError("Image rejected: self-harm content detected", 400);
+  }
+
+  // 🔹 Weapons
+  if (
+    (weapon?.classes?.firearm ?? 0) > thresholds.firearm ||
+    (weapon?.classes?.knife ?? 0) > thresholds.knife
+  ) {
+    throw new AppError("Image rejected: weapons detected", 400);
+  }
+
+  // 🔹 Offensive / Hate
+  if (
+    (offensive?.nazi ?? 0) > thresholds.hate_symbol ||
+    (offensive?.confederate ?? 0) > thresholds.hate_symbol ||
+    (offensive?.supremacist ?? 0) > thresholds.hate_symbol ||
+    (offensive?.terrorist ?? 0) > thresholds.hate_symbol ||
+    (offensive?.middle_finger ?? 0) > thresholds.offensive
+  ) {
+    throw new AppError("Image rejected: offensive/hate symbols detected", 400);
+  }
+
+  // 🔹 Alcohol
+  if (alcohol?.prob > thresholds.alcohol) {
+    throw new AppError("Image rejected: alcohol content detected", 400);
+  }
+
+  // 🔹 Drugs
+  if (
+    recreational_drug?.prob > thresholds.drugs ||
+    (recreational_drug?.classes?.cannabis ?? 0) > thresholds.drugs
+  ) {
+    throw new AppError("Image rejected: drug-related content detected", 400);
   }
 
   return true; // ✅ Safe image
