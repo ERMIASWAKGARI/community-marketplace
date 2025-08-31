@@ -6,16 +6,29 @@ import { successResponse } from "../utils/response.js";
 
 // List all pending provider verification requests
 export const getPendingVerifications = asyncHandler(async (req, res) => {
-  const users = await User.find({ "providerVerification.status": "pending" })
-    .select("name email providerVerification")
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  const sortBy = req.query.sortBy || "createdAt"; // default field
+  const sortOrder = req.query.sortOrder === "asc" ? 1 : -1; // default desc
+
+  const filter = { "providerVerification.status": "pending" };
+
+  const total = await User.countDocuments(filter);
+
+  const users = await User.find(filter)
+    .select("name email providerVerification createdAt")
+    .sort({ [sortBy]: sortOrder })
+    .skip(skip)
+    .limit(limit)
     .lean();
 
   return successResponse(
     res,
     200,
-    { users },
-    "Pending verifications retrieved successfully",
-    users.length
+    { users, page, limit, total },
+    "Pending verifications retrieved successfully"
   );
 });
 
