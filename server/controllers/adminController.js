@@ -60,10 +60,11 @@ export const rejectVerification = asyncHandler(async (req, res) => {
   // Optional: remove docs from Cloudinary
   if (user.providerVerification.documents?.length) {
     for (const doc of user.providerVerification.documents) {
-      await cloudinary.uploader.destroy(doc.public_id, {
-        resource_type: "auto",
-      });
+      await cloudinary.uploader.destroy(doc.public_id);
     }
+
+    // Clear documents array from DB
+    user.providerVerification.documents = [];
   }
 
   await user.save();

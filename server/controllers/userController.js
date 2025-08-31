@@ -103,7 +103,6 @@ export const requestProviderVerification = asyncHandler(async (req, res) => {
     try {
       const result = await cloudinary.uploader.upload(file.path, {
         folder: `provider_docs/${userId}`,
-        resource_type: "auto", // allows PDFs & images
       });
 
       uploadedDocs.push({
