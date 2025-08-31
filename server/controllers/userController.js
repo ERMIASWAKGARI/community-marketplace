@@ -124,7 +124,7 @@ export const requestProviderVerification = asyncHandler(async (req, res) => {
   }
 
   // Save documents and request status in user
-  user.verificationRequest = {
+  user.providerVerification = {
     status: "pending", // admin will approve/reject
     documents: uploadedDocs,
     requestedAt: new Date(),
@@ -140,7 +140,7 @@ export const requestProviderVerification = asyncHandler(async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        verificationRequest: user.verificationRequest,
+        verificationRequest: user.providerVerification,
       },
     },
   });
