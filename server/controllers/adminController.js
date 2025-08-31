@@ -2,6 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import User from "../models/userModel.js";
 import { AppError } from "../utils/appError.js";
 import cloudinary from "../config/cloudinary.js";
+import { successResponse } from "../utils/response.js";
 
 // List all pending provider verification requests
 export const getPendingVerifications = asyncHandler(async (req, res) => {
@@ -9,11 +10,12 @@ export const getPendingVerifications = asyncHandler(async (req, res) => {
     .select("name email providerVerification")
     .lean();
 
-  res.json({
-    status: "success",
-    results: users.length,
-    data: users,
-  });
+  return successResponse(
+    res,
+    200,
+    { users },
+    "Pending verifications retrieved successfully"
+  );
 });
 
 // Approve provider
@@ -31,11 +33,12 @@ export const approveVerification = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  res.json({
-    status: "success",
-    message: "Provider verified successfully",
-    data: user.providerVerification,
-  });
+  return successResponse(
+    res,
+    200,
+    { user: user.providerVerification },
+    "Provider verified successfully"
+  );
 });
 
 // Reject provider
@@ -64,9 +67,10 @@ export const rejectVerification = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  res.json({
-    status: "success",
-    message: "Provider verification rejected",
-    data: user.providerVerification,
-  });
+  return successResponse(
+    res,
+    200,
+    { user: user.providerVerification },
+    "Provider verification rejected"
+  );
 });
