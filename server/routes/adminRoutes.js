@@ -1,4 +1,6 @@
 import express from "express";
+
+import User from "../models/userModel.js";
 import { protect, adminOnly } from "../middlewares/authMiddleware.js";
 import {
   getUsers,
@@ -7,7 +9,6 @@ import {
   rejectVerification,
 } from "../controllers/adminController.js";
 import paginate from "../middlewares/paginateAndFilter.js";
-import User from "../models/userModel.js";
 
 const router = express.Router();
 
@@ -33,12 +34,14 @@ router.get(
   }),
   getPendingVerifications
 );
+
 router.put(
   "/verifications/:userId/approve",
   protect,
   adminOnly,
   approveVerification
 );
+
 router.put(
   "/verifications/:userId/reject",
   protect,

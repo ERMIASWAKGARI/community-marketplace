@@ -1,18 +1,22 @@
 import express from "express";
+
+import { protect } from "../middlewares/authMiddleware.js";
+import { updateAvatar } from "../controllers/userController.js";
+import { uploadAvatar, uploadDocs } from "../middlewares/uploadMiddleware.js";
+
 import {
   createUser,
   getUserById,
   deleteUserById,
   requestProviderVerification,
 } from "../controllers/userController.js";
-import { protect } from "../middlewares/authMiddleware.js";
-import { updateAvatar } from "../controllers/userController.js";
-import { uploadAvatar, uploadDocs } from "../middlewares/uploadMiddleware.js";
 
 const router = express.Router();
 
 router.post("/register", createUser);
+
 router.route("/:id").get(protect, getUserById).delete(protect, deleteUserById);
+
 router.put("/avatar", protect, uploadAvatar.single("avatar"), updateAvatar);
 
 router.post(
