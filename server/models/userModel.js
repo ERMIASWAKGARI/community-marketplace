@@ -70,15 +70,13 @@ const userSchema = new mongoose.Schema(
       average: { type: Number, default: 0 },
       count: { type: Number, default: 0 },
     },
-
-    // Security & account status
-    isActive: {
-      type: Boolean,
-      default: true,
+    status: {
+      type: String,
+      enum: ["active", "deactivated", "suspended", "banned"],
+      default: "active",
     },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
-
     isEmailVerified: {
       type: Boolean,
       default: false,
