@@ -6,15 +6,30 @@ import {
   approveVerification,
   rejectVerification,
 } from "../controllers/adminController.js";
+import paginateAndFilter from "../middlewares/paginateAndFilter.js";
+import User from "../models/userModel.js";
 
 const router = express.Router();
 
-router.get("/users", protect, adminOnly, getUsers);
+router.get(
+  "/users",
+  protect,
+  adminOnly,
+  paginateAndFilter(User, {
+    searchFields: ["name", "email"],
+    select: "name email providerVerification createdAt",
+  }),
+  getUsers
+);
 
 router.get(
   "/verifications/pending",
   protect,
   adminOnly,
+  paginateAndFilter(User, {
+    searchFields: ["name", "email"],
+    select: "name email providerVerification createdAt",
+  }),
   getPendingVerifications
 );
 router.put(
