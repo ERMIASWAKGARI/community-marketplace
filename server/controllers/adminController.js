@@ -4,6 +4,47 @@ import { AppError } from "../utils/appError.js";
 import cloudinary from "../config/cloudinary.js";
 import { successResponse } from "../utils/response.js";
 
+// ✅ Get paginated, sortable, filterable list of users
+export const getUsers = asyncHandler(async (req, res) => {
+  console.log("Admin fetching users with query:", req.query);
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  // Sorting
+  const sortBy = req.query.sortBy || "createdAt";
+  const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
+
+  // Filtering (example: role, email, status, etc.)
+  const filter = {};
+  if (req.query.role) filter.role = req.query.role;
+  if (req.query.status)
+    filter["providerVerification.status"] = req.query.status;
+  if (req.query.search) {
+    filter.$or = [
+      { name: { $regex: req.query.search, $options: "i" } },
+      { email: { $regex: req.query.search, $options: "i" } },
+    ];
+  }
+
+  // Query DB
+  const total = await User.countDocuments(filter);
+
+  const users = await User.find(filter)
+    .select("name email role providerVerification createdAt")
+    .sort({ [sortBy]: sortOrder })
+    .skip(skip)
+    .limit(limit)
+    .lean();
+
+  return successResponse(
+    res,
+    200,
+    { users, page, limit, total },
+    "Users retrieved successfully"
+  );
+});
+
 // List all pending provider verification requests
 export const getPendingVerifications = asyncHandler(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
