@@ -20,7 +20,7 @@ export const createService = asyncHandler(async (req, res) => {
     await moderateImage(file.path);
 
     const result = await cloudinary.uploader.upload(file.path, {
-      folder: "services",
+      folder: `services/${req.user._id}`,
       transformation: [{ width: 800, height: 600, crop: "limit" }], // standard resize
     });
 
