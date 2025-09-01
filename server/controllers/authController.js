@@ -30,14 +30,13 @@ export const resendVerificationEmail = asyncHandler(async (req, res) => {
 export const loginUser = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
 
-  // Check if user exists & select password field
   const user = await User.findOne({ email }).select("+password");
 
   if (!user) {
     throw new AppError("Invalid email or password", 401);
   }
 
-  // Check if email is verified
+  // Email verification check
   if (!user.isEmailVerified) {
     throw new AppError(
       "Email not verified. Please verify your email first.",
@@ -45,7 +44,26 @@ export const loginUser = asyncHandler(async (req, res, next) => {
     );
   }
 
-  // Check password
+  // Account moderation checks
+  if (user.status === "deactivated") {
+    throw new AppError(
+      "This account has been deactivated. Do you want to reactivate it?",
+      403
+    );
+  }
+
+  if (user.status === "suspended") {
+    throw new AppError(
+      "This account is temporarily suspended. Please try again later or contact support.",
+      403
+    );
+  }
+
+  if (user.status === "banned") {
+    throw new AppError("This account has been permanently banned.", 403);
+  }
+
+  // Password check
   const isMatch = await user.matchPassword(password);
   if (!isMatch) {
     throw new AppError("Invalid email or password", 401);
@@ -54,7 +72,6 @@ export const loginUser = asyncHandler(async (req, res, next) => {
   // Generate token
   const token = generateToken(user._id, process.env.JWT_SECRET, "7d");
 
-  // Return user data without password
   const userToReturn = user.toObject();
   delete userToReturn.password;
 
