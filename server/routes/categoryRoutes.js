@@ -1,4 +1,3 @@
-// routes/adminCategoryRoutes.js
 import express from "express";
 import { protect, adminOnly } from "../middlewares/authMiddleware.js";
 import {
