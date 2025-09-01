@@ -12,11 +12,19 @@ const paginateAndFilter = (Model, options = {}) =>
     const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
 
     // Filtering
-    const filter = {};
+    let filter = {};
     if (req.query.role) filter.role = req.query.role;
     if (req.query.status)
       filter["providerVerification.status"] = req.query.status;
-    if (options.filter) Object.assign(filter, options.filter);
+    // if (options.filter) Object.assign(filter, options.filter);
+
+    if (options.filter) {
+      const customFilter =
+        typeof options.filter === "function"
+          ? options.filter(req)
+          : options.filter;
+      filter = { ...filter, ...customFilter };
+    }
 
     if (req.query.search) {
       filter.$or =

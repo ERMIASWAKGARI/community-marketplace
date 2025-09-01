@@ -38,8 +38,8 @@ router.get(
   "/me",
   protect,
   paginateAndFilter(Service, {
-    filter: (req) => ({ provider: req.user._id }),
     searchFields: ["title", "description", "tags"],
+    filter: (req) => ({ provider: req.user._id }), // 👈 function, returns object
   }),
   getMyServices
 );
