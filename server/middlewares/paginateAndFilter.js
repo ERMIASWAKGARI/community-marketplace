@@ -16,6 +16,7 @@ const paginateAndFilter = (Model, options = {}) =>
     if (req.query.role) filter.role = req.query.role;
     if (req.query.status)
       filter["providerVerification.status"] = req.query.status;
+    if (options.filter) Object.assign(filter, options.filter);
 
     if (req.query.search) {
       filter.$or =
@@ -23,6 +24,7 @@ const paginateAndFilter = (Model, options = {}) =>
           [field]: { $regex: req.query.search, $options: "i" },
         })) || [];
     }
+    console.log(filter);
 
     // Count total
     const total = await Model.countDocuments(filter);

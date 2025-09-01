@@ -17,7 +17,7 @@ router.get(
   adminOnly,
   paginate(User, {
     searchFields: ["name", "email"],
-    select: "name email providerVerification createdAt",
+    select: "name email role providerVerification createdAt",
   }),
   getUsers
 );
@@ -28,7 +28,8 @@ router.get(
   adminOnly,
   paginate(User, {
     searchFields: ["name", "email"],
-    select: "name email providerVerification createdAt",
+    select: "name email role providerVerification createdAt",
+    filter: { "providerVerification.status": "pending" },
   }),
   getPendingVerifications
 );
