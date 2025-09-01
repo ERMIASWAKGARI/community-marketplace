@@ -10,6 +10,13 @@ import { moderateImage } from "../utils/moderateImage.js"; // same as your avata
 export const createService = asyncHandler(async (req, res) => {
   const { title, description, category, subcategory, price, tags } = req.body;
 
+  if (!title || !description || !category || !price) {
+    throw new AppError(
+      "Title, description, category, and price are required",
+      400
+    );
+  }
+
   if (!req.files || req.files.length === 0) {
     throw new AppError("At least one service image is required", 400);
   }
