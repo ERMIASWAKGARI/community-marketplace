@@ -47,3 +47,16 @@ export const adminOnly = (req, res, next) => {
 
   next();
 };
+
+export const providerOnly = (req, res, next) => {
+  if (!req.user) {
+    // Shouldn't happen if protect is used first
+    throw new AppError("Not authorized", 401);
+  }
+
+  if (req.user.role !== "provider") {
+    throw new AppError("Provider access required", 403);
+  }
+
+  next();
+};

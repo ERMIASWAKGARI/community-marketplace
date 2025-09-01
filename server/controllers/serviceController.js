@@ -4,11 +4,33 @@ import { Category } from "../models/categoryModel.js";
 import { AppError } from "../utils/appError.js";
 import { successResponse } from "../utils/response.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import cloudinary from "../config/cloudinary.js"; // make sure you have config
+import { moderateImage } from "../utils/moderateImage.js"; // same as your avatar check
 
-// Create Service
 export const createService = asyncHandler(async (req, res) => {
   const { title, description, category, subcategory, price, tags } = req.body;
 
+  if (!req.files || req.files.length === 0) {
+    throw new AppError("At least one service image is required", 400);
+  }
+
+  // 1. Moderate + upload all images to Cloudinary
+  const uploadResults = [];
+  for (const file of req.files) {
+    await moderateImage(file.path);
+
+    const result = await cloudinary.uploader.upload(file.path, {
+      folder: "services",
+      transformation: [{ width: 800, height: 600, crop: "limit" }], // standard resize
+    });
+
+    uploadResults.push({
+      url: result.secure_url,
+      public_id: result.public_id,
+    });
+  }
+
+  // 2. Create the service
   const newService = await Service.create({
     provider: req.user._id,
     title,
@@ -17,13 +39,15 @@ export const createService = asyncHandler(async (req, res) => {
     subcategory,
     price,
     tags,
-    images: req.files?.map((file) => ({
-      url: file.path,
-      public_id: file.filename,
-    })),
+    images: uploadResults, // Cloudinary results only
   });
 
-  return successResponse(res, 201, { service: newService }, "Service created");
+  return successResponse(
+    res,
+    201,
+    { service: newService },
+    "Service created successfully"
+  );
 });
 
 // Get All Services (public marketplace)

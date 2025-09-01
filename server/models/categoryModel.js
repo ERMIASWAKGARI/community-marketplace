@@ -2,10 +2,20 @@ import mongoose from "mongoose";
 
 const categorySchema = new mongoose.Schema(
   {
-    name: { type: String, required: true, unique: true, trim: true },
-    description: { type: String, trim: true },
-    icon: { type: String }, // optional, UI friendly
-    isActive: { type: Boolean, default: true },
+    name: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      maxlength: 100,
+    },
+    description: {
+      type: String,
+      trim: true,
+      maxlength: 500,
+    },
+    // Optional: for hierarchical categories (main -> subcategories)
+    slug: { type: String, unique: true, lowercase: true, trim: true },
   },
   { timestamps: true }
 );
@@ -14,13 +24,18 @@ export const Category = mongoose.model("Category", categorySchema);
 
 const subCategorySchema = new mongoose.Schema(
   {
-    name: { type: String, required: true, trim: true },
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 100,
+    },
     category: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
-      required: true,
+      required: true, // link to parent
     },
-    isActive: { type: Boolean, default: true },
+    slug: { type: String, unique: true, lowercase: true, trim: true },
   },
   { timestamps: true }
 );

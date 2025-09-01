@@ -1,6 +1,10 @@
 // routes/serviceRoutes.js
 import express from "express";
-import { protect, adminOnly } from "../middlewares/authMiddleware.js";
+import {
+  protect,
+  adminOnly,
+  providerOnly,
+} from "../middlewares/authMiddleware.js";
 import {
   createService,
   getServices,
@@ -16,8 +20,9 @@ router.get("/", getServices);
 
 // Providers
 router.post(
-  "/",
+  "/create-service",
   protect,
+  providerOnly,
   uploadServiceImages.array("images", 5),
   createService
 );
