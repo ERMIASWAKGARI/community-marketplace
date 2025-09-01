@@ -94,8 +94,18 @@ export const getServices = asyncHandler(async (req, res) => {
 
 // Provider's Services
 export const getMyServices = asyncHandler(async (req, res) => {
-  const services = await Service.find({ provider: req.user._id });
-  return successResponse(res, 200, { services }, "Your services retrieved");
+  return successResponse(
+    res,
+    200,
+    {
+      services: res.paginatedResults.results,
+      total: res.paginatedResults.total,
+      page: res.paginatedResults.page,
+      limit: res.paginatedResults.limit,
+      totalPages: res.paginatedResults.totalPages,
+    },
+    "Your services retrieved"
+  );
 });
 
 // Admin approval

@@ -1,5 +1,6 @@
 // routes/serviceRoutes.js
 import express from "express";
+import Service from "../models/serviceModel.js";
 import {
   protect,
   adminOnly,
@@ -12,11 +13,18 @@ import {
   approveService,
 } from "../controllers/serviceController.js";
 import { uploadServiceImages } from "../middlewares/uploadMiddleware.js";
+import paginateAndFilter from "../middlewares/paginateAndFilter.js";
 
 const router = express.Router();
 
 // Public
-router.get("/", getServices);
+router.get(
+  "/",
+  paginateAndFilter(Service, {
+    searchFields: ["title", "description", "tags"],
+  }),
+  getServices
+);
 
 // Providers
 router.post(
@@ -26,7 +34,15 @@ router.post(
   uploadServiceImages.array("images", 5),
   createService
 );
-router.get("/me", protect, getMyServices);
+router.get(
+  "/me",
+  protect,
+  paginateAndFilter(Service, {
+    filter: (req) => ({ provider: req.user._id }),
+    searchFields: ["title", "description", "tags"],
+  }),
+  getMyServices
+);
 
 // Admin
 router.put("/:id/approve", protect, adminOnly, approveService);
