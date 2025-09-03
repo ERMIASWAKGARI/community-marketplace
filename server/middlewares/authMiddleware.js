@@ -22,8 +22,8 @@ export const protect = asyncHandler(async (req, res, next) => {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Attach user to request object (excluding password)
-    req.user = await User.findById(decoded.id).select("-password");
+    // Attach user to request object
+    req.user = await User.findById(decoded.id);
 
     if (!req.user) {
       throw new AppError("User not found", 404);
@@ -36,11 +36,6 @@ export const protect = asyncHandler(async (req, res, next) => {
 });
 
 export const adminOnly = (req, res, next) => {
-  if (!req.user) {
-    // Shouldn't happen if protect is used first
-    throw new AppError("Not authorized", 401);
-  }
-
   if (req.user.role !== "admin") {
     throw new AppError("Admin access required", 403);
   }
@@ -49,11 +44,6 @@ export const adminOnly = (req, res, next) => {
 };
 
 export const providerOnly = (req, res, next) => {
-  if (!req.user) {
-    // Shouldn't happen if protect is used first
-    throw new AppError("Not authorized", 401);
-  }
-
   if (req.user.role !== "provider") {
     throw new AppError("Provider access required", 403);
   }
