@@ -30,7 +30,7 @@ export const resendVerificationEmail = asyncHandler(async (req, res) => {
 export const loginUser = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
 
-  const user = await User.findOne({ email }).select("+password");
+  const user = await User.findOne({ email });
 
   if (!user) {
     throw new AppError("Invalid email or password", 401);

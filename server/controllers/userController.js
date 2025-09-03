@@ -57,7 +57,7 @@ export const updateAvatar = asyncHandler(async (req, res) => {
   if (!req.file) throw new AppError("No image uploaded", 400);
 
   // 1. Moderate before upload
-  await moderateImage(req.file.path);
+  moderateImage(req.file.path);
 
   // 2. Upload to Cloudinary
   const result = await cloudinary.uploader.upload(req.file.path, {

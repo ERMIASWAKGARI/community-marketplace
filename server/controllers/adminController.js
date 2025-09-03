@@ -4,7 +4,7 @@ import { AppError } from "../utils/appError.js";
 import cloudinary from "../config/cloudinary.js";
 import { successResponse } from "../utils/response.js";
 
-// ✅ Get paginated, sortable, filterable list of users
+// Get paginated, sortable, filterable list of users
 export const getUsers = asyncHandler(async (req, res) => {
   return successResponse(
     res,
