@@ -31,7 +31,7 @@ export const createUser = asyncHandler(async (req, res) => {
 export const getUserById = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
-  const user = await User.findById(id).select("-password");
+  const user = await User.findById(id);
 
   if (!user) {
     throw new AppError("User not found", 404);

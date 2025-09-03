@@ -1,7 +1,8 @@
 import modClient from "../config/sightengine.js";
 import { AppError } from "./appError.js";
+import { asyncHandler } from "./asyncHandler.js";
 
-export const moderateImage = async (filePath) => {
+export const moderateImage = asyncHandler(async (filePath) => {
   const moderationResult = await modClient
     .check([
       "nudity-2.1",
@@ -107,5 +108,5 @@ export const moderateImage = async (filePath) => {
     throw new AppError("Image rejected: drug-related content detected", 400);
   }
 
-  return true; // ✅ Safe image
-};
+  return true; // Safe image
+});
